@@ -388,6 +388,41 @@ func (g *generator) sendSignalToFilteredContainers(config config.Config) {
 	}
 }
 
+func (g *generator) sendCmdToContainers(config config.Config) {
+	if len(config.NotifyContainersCmd) <1 {
+		return
+	}
+	for container, cmd := range config.NotifyContainersCmd {
+		log.Printf("Sending container '%s' signal '%s'", container, cmd)
+
+		config := docker.CreateExecOptions{
+			Container:   container,
+			AttachStdin: true,
+			AttachStoud: true,
+			Cmd:         cmd,
+		}
+
+		execObj, err := g.Client.CreateExec(config)
+
+		if err != nil {
+			log.Printf("Error creating cmd execution: %s", err)
+			return
+		}
+
+		opts := docker.StartExecOptions{
+			OutputStream: &stdout,
+			ErrorStream:  &stderr,
+			Success:      success,
+		}
+
+		if err := g.Client.StartExec(execObj, opts); err != nill {
+			log.Printf("Error executing command: %s", err)
+		}
+
+		<- success
+	}
+}
+
 func (g *generator) getContainers(config config.Config) ([]*context.RuntimeContainer, error) {
 	apiInfo, err := g.Client.Info()
 	if err != nil {
