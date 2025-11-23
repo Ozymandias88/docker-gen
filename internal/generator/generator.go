@@ -419,6 +419,7 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 			OutputStream: &stdout,
 			Success:      success,
 			Tty:          true,
+			RawTerminal:  true,
 		}
 
 		execErr := g.Client.StartExec(execObj.ID, execRunOpts)
