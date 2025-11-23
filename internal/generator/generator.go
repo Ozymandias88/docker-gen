@@ -418,12 +418,13 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 		execRunOpts := docker.StartExecOptions{
 			OutputStream: &stdout,
 			Success:      success,
+			Tty:          true,
 		}
 
 		execErr := g.Client.StartExec(execObj.ID, execRunOpts)
 
 		if execErr !=nil {
-			log.Printf("Error executing command for container %s: %v. Stderr: %s", container, execErr)
+			log.Printf("Error executing command for container %s: %v", container, execErr)
 			continue
 		}
 
