@@ -396,12 +396,12 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 	}
 	for container, cmd := range config.NotifyContainersCmd {
 		log.Printf("Sending container '%s' cmd '%s'", container, cmd)
-		log.Printf("Slice length: %d", len(cmd))
 
 		createOpts := docker.CreateExecOptions{
 			Container:    container,
 			AttachStdout: true,
 			AttachStderr: true,
+			Tty:          true,
 			Cmd:          cmd,
 		}
 
@@ -409,23 +409,22 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 
 		if err != nil {
 			log.Printf("Error creating cmd execution: %s", err)
-			return
+			continue
 		}
 
-		var stdout, stderr bytes.Buffer
+		var stdout bytes.Buffer
 		success := make(chan struct{}, 1)
 
 		execRunOpts := docker.StartExecOptions{
 			OutputStream: &stdout,
-			ErrorStream:  &stderr,
 			Success:      success,
 		}
 
 		execErr := g.Client.StartExec(execObj.ID, execRunOpts)
 
 		if execErr !=nil {
-			log.Printf("Error executing command for container %s: %v. Stderr: %s", container, execErr, stderr.String())
-			return
+			log.Printf("Error executing command for container %s: %v. Stderr: %s", container, execErr)
+			continue
 		}
 
 		<-success
