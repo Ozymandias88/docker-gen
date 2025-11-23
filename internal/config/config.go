@@ -16,7 +16,7 @@ type Config struct {
 	NotifyContainers       map[string]int
 	NotifyContainersFilter map[string][]string
 	NotifyContainersSignal int
-	NotifyContainersCmd    map[string]string
+	NotifyContainersCmd    map[string][]string
 	ContainerFilter        map[string][]string
 	Interval               int
 	KeepBlankLines         bool

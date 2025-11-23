@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -217,6 +218,7 @@ func (g *generator) generateFromEvents() {
 				g.runNotifyCmd(cfg)
 				g.sendSignalToContainers(cfg)
 				g.sendSignalToFilteredContainers(cfg)
+				g.sendCmdToContainers(cfg)
 			}
 		}(cfg)
 	}
@@ -393,30 +395,36 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 		return
 	}
 	for container, cmd := range config.NotifyContainersCmd {
-		log.Printf("Sending container '%s' signal '%s'", container, cmd)
+		log.Printf("Sending container '%s' cmd '%s'", container, cmd)
 
-		config := docker.CreateExecOptions{
+		execInstanceOpts := docker.CreateExecOptions{
 			Container:   container,
-			AttachStdin: true,
-			AttachStoud: true,
+			AttachStdin: false,
+			AttachStdout: true,
 			Cmd:         cmd,
 		}
 
-		execObj, err := g.Client.CreateExec(config)
+		execObj, err := g.Client.CreateExec(execInstanceOpts)
 
 		if err != nil {
 			log.Printf("Error creating cmd execution: %s", err)
 			return
 		}
 
-		opts := docker.StartExecOptions{
-			OutputStream: &stdout,
-			ErrorStream:  &stderr,
+		var out bytes.Buffer
+		success := make(chan struct{})
+
+		execRunOpts := docker.StartExecOptions{
+			OutputStream: &out,
+			ErrorStream:  &out,
 			Success:      success,
 		}
 
-		if err := g.Client.StartExec(execObj, opts); err != nill {
+		execErr := g.Client.StartExec(execObj.ID, execRunOpts)
+
+		if execErr !=nil {
 			log.Printf("Error executing command: %s", err)
+			return
 		}
 
 		<- success
