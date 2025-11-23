@@ -398,10 +398,10 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 		log.Printf("Sending container '%s' cmd '%s'", container, cmd)
 
 		execInstanceOpts := docker.CreateExecOptions{
-			Container:   container,
-			AttachStdin: false,
+			Container:    container,
+			AttachStdin:  false,
 			AttachStdout: true,
-			Cmd:         cmd,
+			Cmd:          cmd,
 		}
 
 		execObj, err := g.Client.CreateExec(execInstanceOpts)
@@ -411,21 +411,23 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 			return
 		}
 
-		var out bytes.Buffer
+		var stdout, stderr bytes.Buffer
 		success := make(chan struct{})
 
 		execRunOpts := docker.StartExecOptions{
-			OutputStream: &out,
-			ErrorStream:  &out,
+			OutputStream: &stdout,
+			ErrorStream:  &stderr,
 			Success:      success,
 		}
 
 		execErr := g.Client.StartExec(execObj.ID, execRunOpts)
 
 		if execErr !=nil {
-			log.Printf("Error executing command: %s", err)
+			log.Printf("Error executing command for container %s: %v. Stderr: %s", container, execErr, stderr.String())
 			return
 		}
+
+		log.Printf("Command executed successfully on container %s. Stdout: %s", container, stdout.String())
 
 		<- success
 	}
