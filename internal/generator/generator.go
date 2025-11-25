@@ -413,11 +413,9 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 		}
 
 		var stdout bytes.Buffer
-		success := make(chan struct{}, 1)
 
 		execRunOpts := docker.StartExecOptions{
 			OutputStream: &stdout,
-			Success:      success,
 			Tty:          true,
 			RawTerminal:  true,
 		}
@@ -429,9 +427,16 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 			continue
 		}
 
-		<-success
-		
-		log.Printf("Command executed successfully on container %s. Stdout: %s", container, stdout.String())
+		inspect, err := g.Client.InspectExec(exec.ObjID)
+		if err ! = nil {
+			log.Printf("Error inspecting exec for container %s: %v", container, err)
+			continue
+		}
+		if inspect.ExitCode != 0 {
+			log.Printf("Command failed on container %s. Exit Code: %d. Output: %s", container, inspect.ExitCode, stdout.String())
+		} else {
+			log.Printf("Command executed successfully on container %s. Output: %s", container, stdout.String())
+		}
 	}
 }
 
