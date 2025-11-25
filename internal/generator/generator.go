@@ -391,7 +391,7 @@ func (g *generator) sendSignalToFilteredContainers(config config.Config) {
 }
 
 func (g *generator) sendCmdToContainers(config config.Config) {
-	if len(config.NotifyContainersCmd) <1 {
+	if len(config.NotifyContainersCmd) < 1 {
 		return
 	}
 	for container, cmd := range config.NotifyContainersCmd {
@@ -420,7 +420,7 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 		}
 
 		err := g.Client.StartExec(execObj.ID, startOpts)
-		if err !=nil {
+		if err != nil {
 			log.Printf("Error executing command for container %s: %v", container, execErr)
 			continue
 		}
