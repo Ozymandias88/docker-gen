@@ -427,7 +427,7 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 			continue
 		}
 
-		inspect, err := g.Client.InspectExec(exec.ObjID)
+		inspect, err := g.Client.InspectExec(execObj.ID)
 		if err != nil {
 			log.Printf("Error inspecting exec for container %s: %v", container, err)
 			continue
