@@ -419,9 +419,9 @@ func (g *generator) sendCmdToContainers(config config.Config) {
 			RawTerminal:  true,
 		}
 
-		err := g.Client.StartExec(execObj.ID, startOpts)
+		err = g.Client.StartExec(execObj.ID, startOpts)
 		if err != nil {
-			log.Printf("Error executing command for container %s: %v", container, execErr)
+			log.Printf("Error executing command for container %s: %v", container, err)
 			continue
 		}
 
